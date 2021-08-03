@@ -6,8 +6,7 @@ use App\Models\Anggota;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-
-class AnggotaController extends Controller
+class CobaController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,122 +15,104 @@ class AnggotaController extends Controller
      */
     public function index()
     {
-        $anggota = Anggota::all();
+        $anggota = Anggota::with('buku')->whereHas('buku')->get();
 
         return response()->json([
             'success' => true,
-            'message' => 'Daftar data anggota',
-            'data' => $anggota
+            'message'    => 'Daftar data anggota',
+            'data'       => $anggota
         ], 200);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
+     * 
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store (Request $request)
     {
         $request->validate([
             'nama_anggota' => 'required|unique:anggota|max:255',
             'jenis_kelamin' => 'required',
-          'alamat' => 'required',
-           'email' => 'required',
-           'no_telp' =>'required|numeric',
-            
-
+             'alamat' => 'required',
+             'email' => 'required',
+            'no_telp' =>'required|numeric',
+           
         ]);
 
         $anggota = Anggota::create([
-        
-       'nama_anggota' => $request->nama_anggota,
-       'jenis_kelamin' => $request->jenis_kelamin,
-       'alamat' => $request->alamat,
-       'email' => $request->email,
-       'no_telp' => $request->no_telp,
-
-
-        ]);
-       if($anggota){
-           return response()->json([
-            'success' => true,
-            'message' => 'anggota berhasil ditambahkan',
-            'data' => $anggota
-           ], 200);
-       }else{
-        return response()->json([
-            'success' => false,
-            'message' => 'anggota gagal ditambahkan',
-            'data' => $anggota
-        ], 409);
-
-       }
-
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $anggota = Anggota::all();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Detail Data anggota',
-            'data'    => $anggota
-        ], 200);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'nama_anggota' => 'required|unique:anggota|max:255',
-            'jenis_kelamin' => 'required',
-          'alamat' => 'required',
-           'email' => 'required',
-           'no_telp' =>'required|numeric',
-        ]);
-        $Ang = Anggota::find($id)->update([
             'nama_anggota' => $request->nama_anggota,
             'jenis_kelamin' => $request->jenis_kelamin,
-            'alamat' => $request->alamat,
-            'email' => $request->email,
+             'alamat'=> $request->alamat,
+             'email' => $request->email,
             'no_telp' => $request->no_telp,
+           
+            'buku_id'=> $request->buku_id,
+            
         ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Post Updated',
-            'data'    => $Ang
-        ], 200);
+            if ($anggota) {
+                return response()->json([
+                    'success' => true,
+                    'message'    => 'anggota Berhasil di tambahkan',
+                    'data'       => $anggota 
+                ], 200);
+            }else {
+                return response()->json([
+                    'success' => false,
+                    'message'    => 'anggota Gagal Ditambahkan ',
+                    'data'       => $anggota 
+                ], 409); 
+            }
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function show ($id)
     {
-        $cek = Anggota::find($id)->delete();
-        return response()->json([
+        $ang = Anggota::with('buku')-> where('id',$id)->get();
+        return response()-> json([
             'success' => true,
-            'message' => 'Post Updated',
-            'data'    => $cek
-        ], 200);
+            'message'    => 'Detail Data Anggota ',
+            'data'       => $ang 
+        ], 200); 
     }
-
-}
+    public function edit ($id)
+    {
+        $ang = Anggota::with('buku')-> where('id',$id)->first();
+        return response()-> json([
+            'success' => true,
+            'message'    => 'Detail Data Anggota ',
+            'data'       => $ang 
+        ], 200); 
+    }
+        
+        public function update(Request $request, $id)
+        {
+           
+    
+            
+    
+            $a = Anggota:: find($id)->update([
+                'nama_anggota' => $request->nama_anggota,
+            'jenis_kelamin' => $request->jenis_kelamin,
+             'alamat'=> $request->alamat,
+             'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'buku_id'=> $request->buku_id,
+                
+            ]);
+                    return response()->json([
+                        'success' => true,
+                        'message'    => 'post update',
+                        'data'       => $a ,
+                    ], 200);
+        }
+        public function destroy($id)
+        {
+            $ang = Anggota::find($id)->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'data teman berhasil di hapus',
+                'data'    => $ang
+            ], 200);
+        }
+        
+    }
